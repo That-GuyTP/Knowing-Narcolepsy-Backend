@@ -1,0 +1,71 @@
+:root {
+    --prim-color:#0D1130;
+    --sec-color:#E2CE28;
+    --bckgrd-color:#2A3162;
+}
+
+@font-face {
+    font-family: 'website-font';
+    src: url('https://fonts.googleapis.com/css2?family=Jost&display=swap');
+}
+
+.jost {
+    font-family: "Jost", system-ui;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
+}
+
+html {
+    background-color:var(--bckgrd-color);
+    align-items: center;
+}
+
+body {
+    align-items: center;
+    color:var(--sec-color);
+    font-family: 'website-font';
+}
+
+p {
+    text-align:left;
+    font-size:19px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 60px;
+}
+
+.div-content {
+    background: var(--prim-color);
+    padding: 12px;
+    margin-bottom:10px;
+    border-radius:3px;
+}
+
+.div-content a {
+    color: var(--sec-color);
+}
+
+.div-content a:hover {
+    color: var(--bckgrd-color);
+}
+
+.star {
+    position: absolute;
+    color: var(--sec-color);
+    font-size: 20px;
+    z-index: -2;
+}
+
+@media only screen and (min-width:600px) {
+    html {
+        margin:auto;
+    }
+
+    .div-content {
+        max-width:60%;
+        margin:auto;
+    }
+}
