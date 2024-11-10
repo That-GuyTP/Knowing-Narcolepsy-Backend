@@ -138,5 +138,5 @@ app.get("/api/success-stories", (req, res)=>{
 
 //Localhost port declaration
 app.listen(3000, () => {
-    console.log("Localhost has begun listening");
+    console.log("Beginning start of server.js");
 });
