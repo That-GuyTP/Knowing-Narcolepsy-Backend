@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 app.use(express.static("public"));
+app.use(express.json());
 app.use(cors());
 const Joi = require("joi");
 const multer = require("multer");
@@ -153,44 +154,64 @@ app.get("/api/success-stories", (req, res)=>{
 });
 
 app.post("/api/success-stories", upload.single("img"), (req, res) => {
-    const result = validateStory(req.body);
+    try { //REMOVE TRY-CATCH AFTER DEBUGGING
+        console.log("Request body:", req.body); // ****** DEBUG **********
+        console.log("Request file:", req.file); // ****** DEBUG **********
+        const result = validateStory(req.body);
+        
+        //Check for error
+        if(result.error) {
+            res.status(400).send(result.error.details[0].message);
+            console.log("Error validating Story", result.error.details[0].message);
+            return;
+        }
+        console.log("Successfully validated story");
     
-    //Check for error
-    if(result.error) {
-        res.status(400).send(result.error.details[0].message);
-        console.log("Error validating Story");
-        return;
+        //Making A Story Object
+        const story = {
+            id: stories.length + 1,
+            first_name: req.body.firstName,
+            last_name: req.body.lastName,
+            narc_details: [
+                {
+                    date_diagnosed: req.body.diagnosed, 
+                    type_of_narcolepsy: req.body.type || "",
+                    user_text: req.body.story
+                }
+    
+            ],
+            img_name: req.file ? req.body.img_name : "",
+            city: req.body.city || "",
+            state: req.body.state
+        }
+        if(req.file) {
+            story.img = req.file.filename;
+        }
+        stories.push(story);
+        res.status(200).send(story);
+    } catch (error) {
+        console.error("Server Error:", error);
+        res.status(500).send("Internal Server Error");
     }
-    console.log("Successfully validated story");
-
-    //Making A Story Object
-    const story = {
-        firstName:req.body.first_name,
-        lastName:req.body.last_name,
-        img:req.body.img_name,
-        city:req.body.city,
-        state:req.body.state
-    }
-    if(req.file) {
-        story.img = req.file.filename;
-    }
-    stories.push(story);
-    res.status(200).send(house);
 });
 
 //Validate Inputs
 const validateStory = (story) => {
     const schema = Joi.object({
-       firstName: Joi.string().capitalize().required(),
-       lastName: Joi.string().capitalize().required(),
-       img: Joi.string().capitalize().required(),
-       city: Joi.string().capitalize(),
-       state: Joi.string.capitalize().required()
+        id: Joi.number().allow(""),
+        firstName: Joi.string().required(),
+        lastName: Joi.string().required(),
+        diagnosed: Joi.number().required(),
+        type: Joi.number().allow(""),
+        story: Joi.string().required(),
+        img: Joi.any(),
+        city: Joi.string().allow(""),
+        state: Joi.string().required()
     });
     return schema.validate(story);
 };
 
 //Localhost port declaration
-app.listen(3000, () => {
+app.listen(3001, () => {
     console.log("Beginning start of server.js");
 });
