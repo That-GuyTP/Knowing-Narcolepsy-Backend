@@ -134,7 +134,7 @@ const stories = [
             {
                 "date_diagnosed": "2010",
                 "type_of_narcolepsy": "2",
-                "user_text": "Sophia is adjusting to her recent diagnosis and exploring different treatment options."
+                "user_text": "Sophia is adjusting to her recent diagnosis and exploring different treatment options. She loves being a Narcoleptic."
             }
         ],
         "state": "Washington",
