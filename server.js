@@ -180,12 +180,12 @@ app.post("/api/success-stories", upload.single("img"), (req, res) => {
                 }
     
             ],
-            img_name: req.file ? req.body.img_name : "",
+            img_name: req.file ? req.body.filename : "",
             city: req.body.city || "",
             state: req.body.state
         }
         if(req.file) {
-            story.img = req.file.filename;
+            story.img_name = req.file.filename;
         }
         stories.push(story);
         res.status(200).send(story);
