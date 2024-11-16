@@ -24,7 +24,7 @@ const stories = [
         "_id": 0,
         "first_name": "Susan",
         "last_name": "Miller",
-        "img_name": "images/people/Susan.jpg",
+        "img_name": "Susan.jpg",
         "narc_details": [
             {
             "date_diagnosed": "2011",
@@ -39,7 +39,7 @@ const stories = [
         "_id": 1,
         "first_name": "Thomas",
         "last_name": "Peterson",
-        "img_name": "images/people/Thomas.jpg",
+        "img_name": "Thomas.jpg",
         "narc_details": [
             {
             "date_diagnosed": "2022",
@@ -47,14 +47,14 @@ const stories = [
             "user_text": "Blah blah blah random text here"
             }
         ],
-        "state": "Dakota",
-        "city": "Bismarck"
+        "state": "South Carolina",
+        "city": "Columbia"
     },
     {
         "_id": 2,
         "first_name": "James",
         "last_name": "Thompson",
-        "img_name": "images/people/James.jpg",
+        "img_name": "James.jpg",
         "narc_details": [
             {
                 "date_diagnosed": "2018",
@@ -69,7 +69,7 @@ const stories = [
         "_id": 3,
         "first_name": "Emily",
         "last_name": "Johnson",
-        "img_name": "images/people/Emily.jpg",
+        "img_name": "Emily.jpg",
         "narc_details": [
             {
                 "date_diagnosed": "2021",
@@ -84,7 +84,7 @@ const stories = [
         "_id": 4,
         "first_name": "David",
         "last_name": "Martinez",
-        "img_name": "images/people/David.jpg",
+        "img_name": "David.jpg",
         "narc_details": [
             {
                 "date_diagnosed": "2019",
@@ -99,7 +99,7 @@ const stories = [
         "_id": 5,
         "first_name": "Olivia",
         "last_name": "Parker",
-        "img_name": "images/people/Olivia.jpg",
+        "img_name": "Olivia.jpg",
         "narc_details": [
             {
                 "date_diagnosed": "2024",
@@ -114,7 +114,7 @@ const stories = [
         "_id": 6,
         "first_name": "Michael",
         "last_name": "Anderson",
-        "img_name": "images/people/Michael.jpg",
+        "img_name": "Michael.jpg",
         "narc_details": [
             {
                 "date_diagnosed": "2004",
@@ -129,7 +129,7 @@ const stories = [
         "_id": 7,
         "first_name": "Sophia",
         "last_name": "Lee",
-        "img_name": "images/people/Sophia.jpg",
+        "img_name": "Sophia.jpg",
         "narc_details": [
             {
                 "date_diagnosed": "2010",
@@ -154,7 +154,7 @@ app.get("/api/success-stories", (req, res)=>{
 });
 
 app.post("/api/success-stories", upload.single("img"), (req, res) => {
-    try { //REMOVE TRY-CATCH AFTER DEBUGGING
+    try { // ********DEBUG ******** REMOVE AFTER
         console.log("Request body:", req.body); // ****** DEBUG **********
         console.log("Request file:", req.file); // ****** DEBUG **********
         const result = validateStory(req.body);
