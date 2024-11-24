@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 app.use(express.static("public"));
+app.use(express.static("public/images"));
 app.use(express.json());
 app.use(cors());
 const Joi = require("joi");
@@ -21,19 +22,19 @@ const upload = multer({storage : storage });
 //Defining Success-Stories json file
 const stories = [
     {
-        "_id": 0,
-        "first_name": "Susan",
-        "last_name": "Miller",
-        "img_name": "Susan.jpg",
-        "narc_details": [
+        _id: 0,
+        first_name: "Susan",
+        last_name: "Miller",
+        img_name: "Susan.jpg",
+        narc_details: [
             {
-            "date_diagnosed": "2011",
-            "type_of_narcolepsy": "2",
-            "user_text": "Susan is a strong advacate of Narcolepsy in her state. She has contributed to many research programs."
+            date_diagnosed: "2011",
+            type_of_narcolepsy: "2",
+            user_text: "Susan is a strong advacate of Narcolepsy in her state. She has contributed to many research programs."
             }
         ],
-        "state": "Dakota",
-        "city": "Bismarck"
+        state: "Dakota",
+        city: "Bismarck"
     },
     {
         "_id": 1,
@@ -149,7 +150,7 @@ app.get('/', (req, res) => {
 
 //Set and get API
 app.get("/api/success-stories", (req, res)=>{
-    
+    console.log("Sending stories:", stories);
     res.send(stories);
 });
 
@@ -169,9 +170,10 @@ app.post("/api/success-stories", upload.single("img"), (req, res) => {
     
         //Making A Story Object
         const story = {
-            id: stories.length + 1,
+            _id: stories.length + 1,
             first_name: req.body.firstName,
             last_name: req.body.lastName,
+            img_name: req.file ? req.body.filename : "",
             narc_details: [
                 {
                     date_diagnosed: req.body.diagnosed, 
@@ -180,7 +182,6 @@ app.post("/api/success-stories", upload.single("img"), (req, res) => {
                 }
     
             ],
-            img_name: req.file ? req.body.filename : "",
             city: req.body.city || "",
             state: req.body.state
         }
@@ -198,7 +199,7 @@ app.post("/api/success-stories", upload.single("img"), (req, res) => {
 //Validate Inputs
 const validateStory = (story) => {
     const schema = Joi.object({
-        id: Joi.number().allow(""),
+        _id: Joi.number().allow(""),
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         diagnosed: Joi.number().required(),
@@ -210,6 +211,59 @@ const validateStory = (story) => {
     });
     return schema.validate(story);
 };
+
+//Delete a Success Story
+app.delete("/api/success-stories/:id", (req, res) => {
+    const story = stories.find((ss)=>ss._id === parseInt(req.params.id)); // Find the story from our array of success stories using the id provided. Find works like a for each loop. If a house is found, it sets the const story to that value.
+
+    //If story not found
+    if(!story) {
+        res.status(404).send("The Success Story with the provided id was not found");
+        return;
+    }
+
+    //If story is found
+    const index = stories.index(story); //Remove one item at the index provided in the ArrayList SuccessStories
+    stories.splice(index, 1);
+    res.status(200).send("The Success Story was deleted");
+});
+
+//Edit a Success Story
+app.put("/api/success-stories/:id", upload.single("img"), (req, res) => {
+    const story = stories.find((ss)=>ss._id === parseInt(req.params.id));
+
+    //If story not found
+    if(!story) {
+        res.status(404).send("The Success Story with the provided id was not found");
+        return;
+    }
+
+    //Verify new story edits pass JOI requirements
+    const result = validateStory(req.body);
+    if(result.error) {
+        res.status(400).send(result.error.details[0].message);
+        return;
+    }
+
+    //Edit the Story
+    //story._id = stories.length + 1,
+    story.first_name = req.body.firstName,
+    story.last_name = req.body.lastName,
+    story.narc_details = [
+        {
+            date_diagnosed: req.body.diagnosed, 
+            type_of_narcolepsy: req.body.type || "",
+            user_text: req.body.story,
+        }
+    ],
+    story.img_name = req.file ? req.body.filename : "",
+    story.city = req.body.city || "",
+    story.state = req.body.state
+    if(req.file) {
+        story.img_name = req.file.filename;
+    }
+    res.status(200).send(story); //Send editted story
+})
 
 //Localhost port declaration
 app.listen(3001, () => {
