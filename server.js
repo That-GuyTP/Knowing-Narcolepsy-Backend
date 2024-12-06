@@ -150,14 +150,14 @@ app.get('/', (req, res) => {
 
 //Set and get API
 app.get("/api/success-stories", (req, res)=>{
-    console.log("Sending stories:", stories);
+    // console.log("Sending stories:", stories);
     res.send(stories);
 });
 
 app.post("/api/success-stories", upload.single("img"), (req, res) => {
     try { // ********DEBUG ******** REMOVE AFTER
-        console.log("Request body:", req.body); // ****** DEBUG **********
-        console.log("Request file:", req.file); // ****** DEBUG **********
+        // console.log("Request body:", req.body); // ****** DEBUG **********
+        // console.log("Request file:", req.file); // ****** DEBUG **********
         const result = validateStory(req.body);
         
         //Check for error
@@ -180,7 +180,6 @@ app.post("/api/success-stories", upload.single("img"), (req, res) => {
                     type_of_narcolepsy: req.body.type || "",
                     user_text: req.body.story
                 }
-    
             ],
             city: req.body.city || "",
             state: req.body.state
@@ -254,15 +253,32 @@ app.put("/api/success-stories/:id", upload.single("img"), (req, res) => {
     //story._id = stories.length + 1,
     story.first_name = req.body.firstName || story.first_name,
     story.last_name = req.body.lastName || story.last_name,
-    story.narc_details = req.body.details ? JSON.parse(req.body.details) : story.narc_details,
+    //story.narc_details = req.body.details ? JSON.parse(req.body.details) : story.narc_details,
+    story.narc_details = [
+        {
+            date_diagnosed: req.body.diagnosed || "", 
+            type_of_narcolepsy: req.body.type || "",
+            user_text: req.body.story || "",
+        }
+    ],
+    story.diagnosed = req.body.diagnosed,
+    story.type = req.body.type,
+    story.story = req.body.story,
     story.city = req.body.city || story.city,
     story.state = req.body.state || story.state,
     story.img_name = req.file ? req.file.filename : story.img_name
     if(req.file) {
         story.img_name = req.file.filename;
     }
-    res.status(200).send(story); //Send editted story
-})
+    console.log("Details Array: ", story.narc_details); // Debugging
+    console.log("SuccessStory Object:", story); // DEBUGGING
+    res.status(200).send({ //Send editted story
+        ...story,
+        first_name: story.first_name,
+        last_name: story.last_name,
+        details: story.narc_details,
+    });
+});
 
 //Localhost port declaration
 app.listen(3001, () => {
