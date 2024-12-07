@@ -7,6 +7,7 @@ app.use(express.json());
 app.use(cors());
 const Joi = require("joi");
 const multer = require("multer");
+const mongoose = require("mongoose");
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -19,129 +20,28 @@ const storage = multer.diskStorage({
 
 const upload = multer({storage : storage });
 
-//Defining Success-Stories json file
-const stories = [
-    {
-        _id: 0,
-        first_name: "Susan",
-        last_name: "Miller",
-        img_name: "Susan.jpg",
-        narc_details: [
-            {
-            date_diagnosed: "2011",
-            type_of_narcolepsy: "2",
-            user_text: "Susan is a strong advacate of Narcolepsy in her state. She has contributed to many research programs."
-            }
-        ],
-        state: "Dakota",
-        city: "Bismarck"
-    },
-    {
-        _id: 1,
-        first_name: "Thomas",
-        last_name: "Peterson",
-        img_name: "Thomas.jpg",
-        narc_details: [
-            {
-            date_diagnosed: "2022",
-            type_of_narcolepsy: "2",
-            user_text: "Blah blah blah random text here"
-            }
-        ],
-        state: "South Carolina",
-        city: "Columbia"
-    },
-    {
-        _id: 2,
-        first_name: "James",
-        last_name: "Thompson",
-        img_name: "James.jpg",
-        narc_details: [
-            {
-                date_diagnosed: "2018",
-                type_of_narcolepsy: "1",
-                user_text: "James experiences excessive daytime sleepiness and uses medication to manage his symptoms."
-            }
-        ],
-        state: "California",
-        city: "Los Angeles"
-    },
-    {
-        _id: 3,
-        first_name: "Emily",
-        last_name: "Johnson",
-        img_name: "Emily.jpg",
-        narc_details: [
-            {
-                date_diagnosed: "2021",
-                type_of_narcolepsy: "2",
-                user_text: "Emily was diagnosed during college and is now managing her condition with lifestyle changes."
-            }
-        ],
-        state: "Texas",
-        city: "Austin"
-    },
-    {
-        _id: 4,
-        first_name: "David",
-        last_name: "Martinez",
-        img_name: "David.jpg",
-        narc_details: [
-            {
-                date_diagnosed: "2019",
-                type_of_narcolepsy: "1",
-                user_text: "David experiences cataplexy and has found support through a local narcolepsy group."
-            }
-        ],
-        state: "Florida",
-        city: "Miami"
-    },
-    {
-        _id: 5,
-        first_name: "Olivia",
-        last_name: "Parker",
-        img_name: "Olivia.jpg",
-        narc_details: [
-            {
-                date_diagnosed: "2024",
-                type_of_narcolepsy: "2",
-                user_text: "Olivia is learning to balance work and narcolepsy with the help of her healthcare team."
-            }
-        ],
-        state: "New York",
-        city: "Albany"
-    },
-    {
-        _id: 6,
-        first_name: "Michael",
-        last_name: "Anderson",
-        img_name: "Michael.jpg",
-        narc_details: [
-            {
-                date_diagnosed: "2004",
-                type_of_narcolepsy: "1",
-                user_text: "Michael was diagnosed in his late twenties and has been navigating work-life balance with his condition."
-            }
-        ],
-        state: "Ohio",
-        city: "Columbus"
-    },
-    {
-        _id: 7,
-        first_name: "Sophia",
-        last_name: "Lee",
-        img_name: "Sophia.jpg",
-        narc_details: [
-            {
-                date_diagnosed: "2010",
-                type_of_narcolepsy: "2",
-                user_text: "Sophia is adjusting to her recent diagnosis and exploring different treatment options. She loves being a Narcoleptic."
-            }
-        ],
-        state: "Washington",
-        city: "Seattle"
-    }
-];
+//Declare Mongoose variable and connect to MongoDB
+mongoose
+    .connect("mongodb+srv://hdrive250:qFXZEwXCQL8HNVG5@cluster0.hitk9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    .then(() => {
+        console.log("Connected to MongoDB");
+    })
+    .catch((error) => {
+        console.log("Error. Couldn't connect to MongoDB. Reason: ", error);
+    });
+
+const ssSchema = new mongoose.Schema({
+    first_name:String,
+    last_name:String,
+    img_name:String,
+    narc_details:Array,
+    date_diagnosed:Number, 
+    type_of_narcolepsy:Number || "",
+    user_text:String,
+    state:String,
+    city:String
+});
+const Story = mongoose.model("Story", ssSchema);
 
 //Send index.html on page load.
 app.get('/', (req, res) => {
@@ -149,50 +49,53 @@ app.get('/', (req, res) => {
 });
 
 //Set and get API
-app.get("/api/success-stories", (req, res)=>{
-    // console.log("Sending stories:", stories);
+app.get("/api/success-stories", async(req, res)=>{
+    // console.log("Sending stories:", stories); DEBUG
+    const stories = Story = await Story.find(); // Find stories and send them through the response.
     res.send(stories);
 });
 
-app.post("/api/success-stories", upload.single("img"), (req, res) => {
-    try { // ********DEBUG ******** REMOVE AFTER
-        // console.log("Request body:", req.body); // ****** DEBUG **********
-        // console.log("Request file:", req.file); // ****** DEBUG **********
-        const result = validateStory(req.body);
-        
-        //Check for error
-        if(result.error) {
-            res.status(400).send(result.error.details[0].message);
-            console.log("Error validating Story", result.error.details[0].message);
-            return;
-        }
-        console.log("Successfully validated story");
+app.get("/api/success-stories", async (req, res) => {
+    const story = await Story.findOne({ _id: id});
+    res.send(story);
+});
+
+app.post("/api/success-stories", upload.single("img"), async(req, res) => {
+    // console.log("Request body:", req.body); // ****** DEBUG **********
+    // console.log("Request file:", req.file); // ****** DEBUG **********
+    const result = validateStory(req.body);
     
-        //Making A Story Object
-        const story = {
-            _id: stories.length + 1,
-            first_name: req.body.firstName,
-            last_name: req.body.lastName,
-            img_name: req.file ? req.body.filename : "",
-            narc_details: [
-                {
-                    date_diagnosed: req.body.diagnosed, 
-                    type_of_narcolepsy: req.body.type || "",
-                    user_text: req.body.story
-                }
-            ],
-            city: req.body.city || "",
-            state: req.body.state
-        }
-        if(req.file) {
-            story.img_name = req.file.filename;
-        }
-        stories.push(story);
-        res.status(200).send(story);
-    } catch (error) {
-        console.error("Server Error:", error);
-        res.status(500).send("Internal Server Error");
+    //Check for error
+    if(result.error) {
+        res.status(400).send(result.error.details[0].message);
+        console.log("Error validating Story", result.error.details[0].message);
+        return;
     }
+    console.log("Successfully validated story");
+    
+    //Making A Story Object
+    const story = new Story({
+        first_name:req.body.firstName,
+        last_name: req.body.lastName,
+        img_name: req.file ? req.body.filename : "",
+        narc_details: [
+            {
+                date_diagnosed: req.body.diagnosed, 
+                type_of_narcolepsy: req.body.type || "",
+                user_text: req.body.story
+            }
+        ],
+        city: req.body.city || "",
+        state: req.body.state
+    });
+    if(req.file) {
+        story.img_name = req.file.filename;
+    }
+
+    //Save newly added stories
+    const newStory = await story.save();
+    //res.status(200).send(story);
+    res.send(newStory);
 });
 
 //Validate Inputs
@@ -212,36 +115,31 @@ const validateStory = (story) => {
 };
 
 //Delete a Success Story
-app.delete("/api/success-stories/:id", (req, res) => {
-    console.log("Recieved Success Story ID to delete:", req.params.id); // *********** DEBUG ***************
-    const story = stories.find((ss)=>ss._id === parseInt(req.params.id)); // Find the story from our array of success stories using the id provided. Find works like a for each loop. If a house is found, it sets the const story to that value.
+app.delete("/api/success-stories/:id", async(req, res) => {
+    const story = await Story.findByIdAndDelete(req.params.id);
+    res.status(200).send("The story was deleted");
 
-    //If story not found
-    if(!story) {
-        res.status(404).send("The Success Story with the provided id was not found");
-        return;
-    }
+    // ------------ Old Way using Render/Localhost --------------------
+    // console.log("Recieved Success Story ID to delete:", req.params.id); // *********** DEBUG ***************
+    // const story = stories.find((ss)=>ss._id === parseInt(req.params.id)); // Find the story from our array of success stories using the id provided. Find works like a for each loop. If a house is found, it sets the const story to that value.
 
-    //If story is found
-    const index = stories.indexOf(story); //Remove one item at the index provided in the ArrayList SuccessStories
-    stories.splice(index, 1);
-    res.status(200).send("The Success Story was deleted");
+    // //If story not found
+    // if(!story) {
+    //     res.status(404).send("The Success Story with the provided id was not found");
+    //     return;
+    // }
+
+    // //If story is found
+    // const index = stories.indexOf(story); //Remove one item at the index provided in the ArrayList SuccessStories
+    // stories.splice(index, 1);
+    // res.status(200).send("The Success Story was deleted");
 });
 
 //Edit a Success Story
-app.put("/api/success-stories/:id", upload.single("img"), (req, res) => {
-    console.log("Request body:", req.body); // Debugging
-    console.log("Uploaded file:", req.file); // Debugging
+app.put("/api/success-stories/:id", upload.single("img"), async(req, res) => {
+    // console.log("Request body:", req.body); // Debugging
+    // console.log("Uploaded file:", req.file); // Debugging
 
-    const story = stories.find((ss)=>ss._id === parseInt(req.params.id));
-
-    //If story not found
-    if(!story) {
-        console.error("Story not found"); // DEBUG
-        res.status(404).send("The Success Story with the provided id was not found");
-        return;
-    }
-    //Verify new story edits pass JOI requirements
     const result = validateStory(req.body);
     if(result.error) {
         console.error("validation errr:", result.error.details[0].message); // DEBUG
@@ -249,35 +147,76 @@ app.put("/api/success-stories/:id", upload.single("img"), (req, res) => {
         return;
     }
 
-    //Edit the Story
-    //story._id = stories.length + 1,
-    story.first_name = req.body.firstName || story.first_name,
-    story.last_name = req.body.lastName || story.last_name,
-    //story.narc_details = req.body.details ? JSON.parse(req.body.details) : story.narc_details,
-    story.narc_details = [
-        {
-            date_diagnosed: req.body.diagnosed || "", 
-            type_of_narcolepsy: req.body.type || "",
-            user_text: req.body.story || "",
-        }
-    ],
-    story.diagnosed = req.body.diagnosed,
-    story.type = req.body.type,
-    story.story = req.body.story,
-    story.city = req.body.city || story.city,
-    story.state = req.body.state || story.state,
-    story.img_name = req.file ? req.file.filename : story.img_name
-    if(req.file) {
-        story.img_name = req.file.filename;
+    const fieldsToUpdate = {
+        first_name:req.body.firstName,
+        last_name:req.body.lastName,
+        narc_details:[
+            {
+                date_diagnosed: req.body.diagnosed || "", 
+                type_of_narcolepsy: req.body.type || "",
+                user_text: req.body.story || "",
+            }
+        ],
+        diagnosed:req.body.diagnosed,
+        type:req.body.type,
+        text:req.body.story,
+        city:req.body.city,
+        state:req.body.state,
+        img_name:req.file ? req.file.filename : story.img_name
+    };
+    if (req.file) {
+        fieldsToUpdate.img_name = req.file.filename;
     }
-    console.log("Details Array: ", story.narc_details); // Debugging
-    console.log("SuccessStory Object:", story); // DEBUGGING
-    res.status(200).send({ //Send editted story
-        ...story,
-        first_name: story.first_name,
-        last_name: story.last_name,
-        details: story.narc_details,
-    });
+    const wentThrough = await Story.updateOne({_id:req.params.id}, fieldsToUpdate); //Find it and update it. First parameter is how to find, second is what to change it with.
+    const updatedStory = await Story.findOne({_id:req.params.id}); // Find it and return it.
+    res.status(200).send(updatedStory); // Send back the edited story.
+
+    // --------------- Old Way -------------------
+    // const story = stories.find((ss)=>ss._id === parseInt(req.params.id));
+
+    // //If story not found
+    // if(!story) {
+    //     console.error("Story not found"); // DEBUG
+    //     res.status(404).send("The Success Story with the provided id was not found");
+    //     return;
+    // }
+    // //Verify new story edits pass JOI requirements
+    // const result = validateStory(req.body);
+    // if(result.error) {
+    //     console.error("validation errr:", result.error.details[0].message); // DEBUG
+    //     res.status(400).send(result.error.details[0].message);
+    //     return;
+    // }
+
+    // //Edit the Story
+    // //story._id = stories.length + 1,
+    // story.first_name = req.body.firstName || story.first_name,
+    // story.last_name = req.body.lastName || story.last_name,
+    // //story.narc_details = req.body.details ? JSON.parse(req.body.details) : story.narc_details,
+    // story.narc_details = [
+    //     {
+    //         date_diagnosed: req.body.diagnosed || "", 
+    //         type_of_narcolepsy: req.body.type || "",
+    //         user_text: req.body.story || "",
+    //     }
+    // ],
+    // story.diagnosed = req.body.diagnosed,
+    // story.type = req.body.type,
+    // story.story = req.body.story,
+    // story.city = req.body.city || story.city,
+    // story.state = req.body.state || story.state,
+    // story.img_name = req.file ? req.file.filename : story.img_name
+    // if(req.file) {
+    //     story.img_name = req.file.filename;
+    // }
+    // console.log("Details Array: ", story.narc_details); // Debugging
+    // console.log("SuccessStory Object:", story); // DEBUGGING
+    // res.status(200).send({ //Send editted story
+    //     ...story,
+    //     first_name: story.first_name,
+    //     last_name: story.last_name,
+    //     details: story.narc_details,
+    // });
 });
 
 //Localhost port declaration
