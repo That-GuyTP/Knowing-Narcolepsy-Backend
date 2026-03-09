@@ -21,8 +21,15 @@ const storage = multer.diskStorage({
 const upload = multer({storage : storage });
 
 //Declare Mongoose variable and connect to MongoDB
+const mongoUri = process.env.MONGODB_URI;
+
+if (!mongoUri) {
+    console.error("Missing required environment variable: MONGODB_URI");
+    process.exit(1);
+}
+
 mongoose
-    .connect("mongodb+srv://hdrive250:qFXZEwXCQL8HNVG5@cluster0.hitk9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    .connect(mongoUri)
     .then(() => {
         console.log("Connected to MongoDB");
     })
