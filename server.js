@@ -49,15 +49,30 @@ app.get('/', (req, res) => {
 });
 
 //Set and get API
-app.get("/api/success-stories", async(req, res)=>{
-    // console.log("Sending stories:", stories); DEBUG
-    const stories = Story = await Story.find(); // Find stories and send them through the response.
-    res.send(stories);
+app.get("/api/success-stories", async (req, res) => {
+    try {
+        const stories = await Story.find();
+        res.status(200).json(stories);
+    } catch (error) {
+        console.error("GET success-stories failed:", error);
+        res.status(500).json({ error: "Failed to fetch success stories" });
+    }
 });
 
-app.get("/api/success-stories", async (req, res) => {
-    const story = await Story.findOne({ _id: id});
-    res.send(story);
+app.get("/api/success-stories/:id", async (req, res) => {
+    try {
+        const story = await Story.findById(req.params.id);
+
+        if (!story) {
+            res.status(404).json({ error: "Success Story not found" });
+            return;
+        }
+
+        res.status(200).json(story);
+    } catch (error) {
+        console.error("GET success-story by id failed:", error);
+        res.status(500).json({ error: "Failed to fetch success story" });
+    }
 });
 
 app.post("/api/success-stories", upload.single("img"), async(req, res) => {
@@ -161,8 +176,7 @@ app.put("/api/success-stories/:id", upload.single("img"), async(req, res) => {
         type:req.body.type,
         text:req.body.story,
         city:req.body.city,
-        state:req.body.state,
-        img_name:req.file ? req.file.filename : story.img_name
+        state:req.body.state
     };
     if (req.file) {
         fieldsToUpdate.img_name = req.file.filename;
