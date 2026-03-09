@@ -29,12 +29,13 @@ if (!mongoUri) {
 }
 
 mongoose
-    .connect(mongoUri)
+    .connect(mongoUri, { serverSelectionTimeoutMS: 10000 })
     .then(() => {
         console.log("Connected to MongoDB");
     })
     .catch((error) => {
         console.log("Error. Couldn't connect to MongoDB. Reason: ", error);
+        process.exit(1);
     });
 
 const ssSchema = new mongoose.Schema({
